@@ -15,7 +15,7 @@ import { chromium, firefox, webkit } from 'playwright'
   - Launch different browser to each account
   - Set a UserAgent for each account according correct browser
   - Login each account
-  - Keep looping, waiting new twitt from main account
+
   - When have a new twitt
     - Find the first main @
     - Test if has data-testid="like"
@@ -37,43 +37,54 @@ const userAgents = {
   iosChrome: 'Mozilla/5.0 (iPod; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/87.0.4280.163 Mobile/15E148 Safari/604.1'
 }
 const users = [
-  {
-    userName: process.env.MAIN_USER,
-    password: process.env.MAIN_PASS,
-    browser: chromium,
-    userAgent: userAgents.windowsChrome
-  },
-  {
-    userName: process.env.SMURF_USER,
-    password: process.env.SMURF_PASS,
-    browser: firefox,
-    userAgent: userAgents.windowsChrome
-  },
-  {
-    userName: process.env.BRASA_USER,
-    password: process.env.BRASA_PASS,
-    browser: chromium,
-    userAgent: userAgents.androidChrome
-  },
-  {
-    userName: process.env.RAULEITE_USER,
-    password: process.env.RAULEITE_PASS,
-    browser: webkit,
-    userAgent: userAgents.iosSafari
-  },
+  // {
+  //   userName: process.env.MAIN_USER,
+  //   password: process.env.MAIN_PASS,
+  //   browser: chromium,
+  //   userAgent: userAgents.windowsChrome
+  // },
+  // {
+  //   userName: process.env.SMURF_USER,
+  //   password: process.env.SMURF_PASS,
+  //   // browser: firefox,
+  //   // userAgent: userAgents.windowsChrome
+  //   browser: chromium,
+  //   userAgent: userAgents.windowsEdge
+  // },
+  // {
+  //   userName: process.env.BRASA_USER,
+  //   password: process.env.BRASA_PASS,
+  //   browser: chromium,
+  //   userAgent: userAgents.androidChrome
+  // },
+  // {
+  //   userName: process.env.RAULEITE_USER,
+  //   password: process.env.RAULEITE_PASS,
+  //   browser: chromium,
+  //   userAgent: userAgents.appleChrome
+  // },
   {
     userName: process.env.JOMARIOLSON_USER,
     password: process.env.JOMARIOLSON_PASS,
-    browser: webkit,
-    userAgent: userAgents.appleSafari
+    browser: chromium,
+    userAgent: userAgents.iosChrome
+    // browser: webkit,
+    // userAgent: userAgents.appleSafari
   }
 ]
 const runBrowserForUser = async (user) => {
-  const browser = await user.browser.launch();
+  const browser = await user.browser.launch({
+    // headless: false
+  });
   const context = await browser.newContext();
+
   const page = await context.newPage({
     userAgent: user.userAgent
   });
+  // const repliesPage = await context.newPage({
+  //   userAgent: user.userAgent
+  // });
+
   await page.goto('https://twitter.com/i/flow/login', {
     waitUntil: 'networkidle',
   });
@@ -84,7 +95,9 @@ const runBrowserForUser = async (user) => {
   }
 
   const selector = {
-    like: 'div[data-testid="like"]'
+    like: 'div[data-testid="like"]',
+    // main: 'article[data-testid="tweet"]'
+    main: 'a'
   }
 
   await page.fill(input.userName, user.userName);
@@ -92,17 +105,64 @@ const runBrowserForUser = async (user) => {
   await page.keyboard.press('Enter');
   await page.fill(input.password, user.password);
 
-  await page.screenshot({ path: 'screenshot.png', fullPage: true });
-  // await page.click('div[data-testid="LoginForm_Login_Button"]');
+  await page.screenshot({
+    path: `screenshots/${user.userName}_0.png`,
+    // fullPage: true 
+  });
 
-  await page.waitForNavigation();
+  await page.click('div[data-testid="LoginForm_Login_Button"]');
 
-  await page.waitForSelector(selector.like)
+  // await page.waitForNavigation({
+  //   timeout: 1000000
+  // });
 
+  // await page.waitForLoadState('networkidle');
+
+  // await page.waitForSelector(selector.like, {
+  //   // strict: true,
+  //   timeout: 1000000
+  // })
+
+  await page.waitForTimeout(10000); // wait for 2 seconds
+
+  await page.screenshot({
+    path: `screenshots/${user.userName}_1.png`,
+    // fullPage: true 
+  });
+
+  console.log('a')
+  await page.goto('https://twitter.com/cap_planalto/with_replies', {
+    waitUntil: 'networkidle',
+  });
+  console.log('b')
+
+  // await page.waitForNavigation({
+  //   timeout: 1000000
+  // });
+  await page.waitForSelector(selector.like, {
+    // strict: true,
+    timeout: 1000000
+  })
+  await page.screenshot({
+    path: `screenshots/${user.userName}_2.png`,
+    // fullPage: true,
+    timeout: 1000000
+  });
+
+  // const innerHtmls = await page.locator(selector.main).innerHTML();
+  // // const innerHtmls = await page.content();
+  // console.log('-------')
+  // console.log('innerHtmls', innerHtmls)
+  // console.log('-------')
+
+  // await page.waitForSelector(selector.like)
   // page.click(selector.like);
 
-  await page.waitForTimeout(2000); // wait for 2 seconds
-  // await browser.close();
+  // await repliesPage.waitForTimeout(2000); // wait for 2 seconds
+
+
+
+  await browser.close();
 }
 
 users.forEach(user => {
