@@ -1,6 +1,30 @@
 import 'dotenv/config' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 import { chromium, firefox, webkit } from 'playwright'
 
+/*
+TODO
+(\d.*Replying\sto\s@)|(Retweeted.*@)
+
+  'Marilson João@jomariolson·4hReplying to @MakeItAQuote and @kudimellBoa',
+  'Marilson João RetweetedRafael Portugal @rafaelportugal·May 1Quem te critica com o instagran no privado não tem moral pra te criticar.491082,852',
+  'Marilson João@jomariolson·4hReplying to @rafaelportugalExcelente reflexão',
+  'Marilson João@jomariolson·4hReplying to @rafaelportugalBom dia de tarde',
+'Marilson João RetweetedRafael Portugal @rafaelportugal·10hMinha torcida vai para o Pelanza e Anne.  Eu era muito fã da banda e sei que ele não gosta que tente entrar no carro dele e etc… \n' +
+    '\n' +
+    '#PowerCoupleBrasil2863666',
+
+(regex)
+'Marilson João@jomariolson·4hFazendo uma coisa, por favor ignorem.\n' +
+    '\n' +
+    'Thread 2Show this thread',
+
+ 'Marilson João@jomariolson·4hFazendo uma coisa, por favor ignorem.\n' +
+    '\n' +
+    'Thread 11Show this thread',
+
+  'Marilson João@jomariolson·4hFazendo uma coisa, por favor ignorem.\n\n1 Tweet'
+*/
+
 // (async () => {
 /*
   TODO
@@ -26,6 +50,8 @@ import { chromium, firefox, webkit } from 'playwright'
       - If No
         - Quit loop
 */
+const envDev = process.env.NODE_ENV === 'development'
+
 const userAgents = {
   windowsEdge: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0',
   windowsChrome: 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.7113.93 Safari/537.36',
@@ -72,6 +98,29 @@ const users = [
     // userAgent: userAgents.appleSafari
   }
 ]
+
+const waitFeedLoads = async (page, selector, options) => {
+  const { useTimeoutOnDev = false } = options || {}
+
+  if (useTimeoutOnDev && envDev) {
+    console.info('using timeout')
+    return page.waitForTimeout(10000);
+  }
+
+  console.info('using waiting feed selector')
+  return page.waitForSelector(selector.like, {
+    // strict: true,
+    timeout: 1000000
+  })
+
+  // await page.waitForLoadState('networkidle');
+
+  // await page.waitForNavigation({
+  //   timeout: 1000000
+  // });
+
+}
+
 const runBrowserForUser = async (user) => {
   const browser = await user.browser.launch({
     // headless: false
@@ -81,9 +130,6 @@ const runBrowserForUser = async (user) => {
   const page = await context.newPage({
     userAgent: user.userAgent
   });
-  // const repliesPage = await context.newPage({
-  //   userAgent: user.userAgent
-  // });
 
   await page.goto('https://twitter.com/i/flow/login', {
     waitUntil: 'networkidle',
@@ -94,10 +140,11 @@ const runBrowserForUser = async (user) => {
     password: 'input[type="password"]'
   }
 
+  const selectorMain = 'article[data-testid="tweet"]'
   const selector = {
     like: 'div[data-testid="like"]',
-    // main: 'article[data-testid="tweet"]'
-    main: 'a'
+    main: selectorMain,
+    isMainProfile: `${selectorMain}`
   }
 
   await page.fill(input.userName, user.userName);
@@ -110,58 +157,51 @@ const runBrowserForUser = async (user) => {
     // fullPage: true 
   });
 
-  await page.click('div[data-testid="LoginForm_Login_Button"]');
+  if (!envDev) {
+    console.info('clicked to login')
+    await page.click('div[data-testid="LoginForm_Login_Button"]');
+  }
 
-  // await page.waitForNavigation({
-  //   timeout: 1000000
-  // });
-
-  // await page.waitForLoadState('networkidle');
-
-  // await page.waitForSelector(selector.like, {
-  //   // strict: true,
-  //   timeout: 1000000
-  // })
-
-  await page.waitForTimeout(10000); // wait for 2 seconds
+  await waitFeedLoads(page, selector, {
+    useTimeoutOnDev: true
+  })
 
   await page.screenshot({
     path: `screenshots/${user.userName}_1.png`,
     // fullPage: true 
   });
 
-  console.log('a')
-  await page.goto('https://twitter.com/cap_planalto/with_replies', {
-    waitUntil: 'networkidle',
-  });
-  console.log('b')
+  console.info('a')
 
-  // await page.waitForNavigation({
-  //   timeout: 1000000
-  // });
-  await page.waitForSelector(selector.like, {
-    // strict: true,
-    timeout: 1000000
-  })
+  // await page.goto('https://twitter.com/cap_planalto/with_replies', {
+  await page.goto('https://twitter.com/jomariolson/with_replies', {
+    waitUntil: 'networkidle',
+    // timeout: 1000000
+  });
+  console.info('b')
+
+  // await waitFeedLoads(page, selector)
+
   await page.screenshot({
     path: `screenshots/${user.userName}_2.png`,
-    // fullPage: true,
-    timeout: 1000000
+    fullPage: true,
+    timeout: 100000
   });
 
-  // const innerHtmls = await page.locator(selector.main).innerHTML();
-  // // const innerHtmls = await page.content();
-  // console.log('-------')
-  // console.log('innerHtmls', innerHtmls)
-  // console.log('-------')
+  console.info('c')
 
-  // await page.waitForSelector(selector.like)
-  // page.click(selector.like);
+  // // const innerHtmls = await page.locator(selector.main).innerHTML();
+  // const innerHtmls = await page.locator(selector.main).elementHandles()
+  // const innerHtmls = await page.locator(selector.main).allInnerTexts()
+  const innerHtmls = await page.locator(selector.main).allTextContents()
 
-  // await repliesPage.waitForTimeout(2000); // wait for 2 seconds
-
-
-
+  // innerHtmls.forEach((el) => {
+  //   console.log('el', el)
+  // })
+  console.info('-------')
+  console.info('innerHtmls', innerHtmls)
+  console.info('-------')
+  await page.waitForTimeout(10000);
   await browser.close();
 }
 
@@ -169,4 +209,4 @@ users.forEach(user => {
   runBrowserForUser(user)
 });
 
-// })();
+
