@@ -3,29 +3,9 @@ import { chromium, firefox, webkit } from 'playwright'
 
 /*
 TODO
-(\d.*Replying\sto\s@)|(Retweeted.*@)
-
-  'Marilson João@jomariolson·4hReplying to @MakeItAQuote and @kudimellBoa',
-  'Marilson João RetweetedRafael Portugal @rafaelportugal·May 1Quem te critica com o instagran no privado não tem moral pra te criticar.491082,852',
-  'Marilson João@jomariolson·4hReplying to @rafaelportugalExcelente reflexão',
-  'Marilson João@jomariolson·4hReplying to @rafaelportugalBom dia de tarde',
-'Marilson João RetweetedRafael Portugal @rafaelportugal·10hMinha torcida vai para o Pelanza e Anne.  Eu era muito fã da banda e sei que ele não gosta que tente entrar no carro dele e etc… \n' +
-    '\n' +
-    '#PowerCoupleBrasil2863666',
-
-(regex)
-'Marilson João@jomariolson·4hFazendo uma coisa, por favor ignorem.\n' +
-    '\n' +
-    'Thread 2Show this thread',
-
- 'Marilson João@jomariolson·4hFazendo uma coisa, por favor ignorem.\n' +
-    '\n' +
-    'Thread 11Show this thread',
-
-  'Marilson João@jomariolson·4hFazendo uma coisa, por favor ignorem.\n\n1 Tweet'
+Change to Puppeteer if stealth works
 */
 
-// (async () => {
 /*
   TODO
   Create the rest of accounts
