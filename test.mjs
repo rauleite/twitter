@@ -21,6 +21,9 @@ let tweets = [
 ].map(t => {
   return t.replace(/(\r\n|\n|\r)/gm, ' ')
 })
+
+console.log('year', new Date().getFullYear())
+process.exit()
 console.info('tweets.length', tweets.length)
 
 const name = "Marilson\\sJoão"
