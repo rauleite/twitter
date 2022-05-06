@@ -18,28 +18,29 @@ let tweets = [
   'Marilson João RetweetedRafael Portugal @rafaelportugal·May 1Quem te critica com o instagran no privado não tem moral pra te criticar.491092,864',
   'Marilson João@jomariolson·May 3Replying to @rafaelportugalExcelente reflexão',
   'Marilson João@jomariolson·May 3Replying to @rafaelportugalBom dia de tarde'
-]
+].map(t => {
+  return t.replace(/(\r\n|\n|\r)/gm, ' ')
+})
+console.info('tweets.length', tweets.length)
 
 const name = "Marilson\\sJoão"
 const user = "jomariolson"
 
-tweets = tweets.map(t => {
-  return t.replace(/(\r\n|\n|\r)/gm, "")
-})
-
 // like and not retweet
 const replyAndRetweetsPattern = new RegExp(`^${name}.*(\\d.*Replying\\sto\\s@|Retweeted.*)`)
+const threadsToRetweetPattern = new RegExp(`^${name}.*1Show\\sthis\\sthread$`)
+const isThread = new RegExp(`^${name}.*Show\\sthis\\sthread$`)
 
 const replyAndRetweets = tweets.filter((t => {
-  return replyAndRetweetsPattern.test(t)
+  return !replyAndRetweetsPattern.test(t)
 }))
 console.info('replyAndRetweets', replyAndRetweets)
 
-const threadsToRetweetPattern = new RegExp(`^${name}.*1Show\\sthis\\sthread$`)
-
-const threadsToRetweet = tweets.filter(t => {
-  console.log(t)
-  return threadsToRetweetPattern.test(t)
+const threadsToRetweet = replyAndRetweets.filter(t => {
+  console.info('t', t)
+  if (isThread.test(t)) {
+    return threadsToRetweetPattern.test(t)
+  }
+  return true
 })
-
 console.info('threadsToRetweet', threadsToRetweet)

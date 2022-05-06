@@ -1,5 +1,6 @@
 import 'dotenv/config' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
-import { chromium, firefox, webkit } from 'playwright'
+// import { chromium, firefox, webkit } from 'playwright'
+import puppeteer from 'puppeteer'
 
 /*
 TODO
@@ -44,35 +45,40 @@ const userAgents = {
 }
 const users = [
   // {
-  //   userName: process.env.MAIN_USER,
+  //   name: process.env.MAIN_NAME,
+  //   user: process.env.MAIN_USER,
   //   password: process.env.MAIN_PASS,
-  //   browser: chromium,
+  //   //browser: chromium,
   //   userAgent: userAgents.windowsChrome
   // },
   // {
-  //   userName: process.env.SMURF_USER,
+  //   name: process.env.SMURF_NAME,
+  //   user: process.env.SMURF_USER,
   //   password: process.env.SMURF_PASS,
   //   // browser: firefox,
   //   // userAgent: userAgents.windowsChrome
-  //   browser: chromium,
+  //   //browser: chromium,
   //   userAgent: userAgents.windowsEdge
   // },
   // {
-  //   userName: process.env.BRASA_USER,
+  //   name: process.env.BRASA_NAME,
+  //   user: process.env.BRASA_USER,
   //   password: process.env.BRASA_PASS,
-  //   browser: chromium,
+  //  // browser: chromium,
   //   userAgent: userAgents.androidChrome
   // },
   // {
-  //   userName: process.env.RAULEITE_USER,
+  //   name: process.env.RAULEITE_NAME,
+  //   user: process.env.RAULEITE_USER,
   //   password: process.env.RAULEITE_PASS,
-  //   browser: chromium,
+  //   //browser: chromium,
   //   userAgent: userAgents.appleChrome
   // },
   {
-    userName: process.env.JOMARIOLSON_USER,
+    name: process.env.JOMARIOLSON_NAME,
+    user: process.env.JOMARIOLSON_USER,
     password: process.env.JOMARIOLSON_PASS,
-    browser: chromium,
+    // browser: chromium,
     userAgent: userAgents.iosChrome
     // browser: webkit,
     // userAgent: userAgents.appleSafari
@@ -102,21 +108,26 @@ const waitFeedLoads = async (page, selector, options) => {
 }
 
 const runBrowserForUser = async (user) => {
-  const browser = await user.browser.launch({
+  // with playwright instead puppeteer
+  // const browser = await user.browser.launch({
+  // const context = await browser.newContext();
+  // const page = await context.newPage({
+
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox'],
     // headless: false
   });
-  const context = await browser.newContext();
 
-  const page = await context.newPage({
+  const page = await browser.newPage({
     userAgent: user.userAgent
   });
 
   await page.goto('https://twitter.com/i/flow/login', {
-    waitUntil: 'networkidle',
+    waitUntil: 'networkidle2',
   });
 
   const input = {
-    userName: 'input[type="text"]',
+    user: 'input[type="text"]',
     password: 'input[type="password"]'
   }
 
@@ -127,13 +138,72 @@ const runBrowserForUser = async (user) => {
     isMainProfile: `${selectorMain}`
   }
 
-  await page.fill(input.userName, user.userName);
-  await page.keyboard.press('Tab');
-  await page.keyboard.press('Enter');
-  await page.fill(input.password, user.password);
+  // await page.fill(input.user, user.user);
+  // await page.$eval(input.user, (el, user) => {
+  //   return el.value = user.user
+  // }, user);
+
+  await page.focus(input.user)
+  await page.keyboard.type(user.user)
 
   await page.screenshot({
-    path: `screenshots/${user.userName}_0.png`,
+    path: `screenshots/${user.user}_test_.png`,
+    // fullPage: true 
+  });
+
+
+
+  // const userElem = await page.$(input.user)
+  // const nextElem = await page.$x("//div[@role='button']")
+  // const nextElem = await page.$x("//*[text()[contains(., 'Next')]]")
+  // console.info('userElem', userElem)
+  // console.info('nextElem', nextElem[0])
+
+  // await nextElem[0].click()
+  // await nextElem[0].focus()
+
+  // await userElem.focus()
+  // await userElem.press('Tab')
+  // await userElem.press('Tab')
+  // await userElem.press('Enter')
+  await page.keyboard.press('Tab');
+
+  // await page.waitForTimeout(3000);
+  await page.screenshot({
+    path: `screenshots/${user.user}_test_0.png`,
+    // fullPage: true 
+  });
+  await page.keyboard.press('Enter');
+  // await page.focus()
+
+  // await page.fill(input.password, user.password);
+  // await page.$eval(input.password, el => el.value = user.password);
+  // await page.waitForTimeout(3000);
+  // await page.screenshot({
+  //   path: `screenshots/${user.user}_test_1.png`,
+  //   // fullPage: true 
+  // });
+
+  // await page.waitForNavigation({
+  //   // timeout: 1000000
+  // });
+
+  await page.waitForSelector(input.password, {
+    timeout: 3000
+  })
+
+  await page.screenshot({
+    path: `screenshots/${user.user}_test_2.png`,
+    // fullPage: true 
+  });
+  await page.focus(input.password)
+  await page.keyboard.type(user.password)
+  // await page.$eval(input.password, (el, user) => {
+  //   return el.value = user.password
+  // }, user);
+
+  await page.screenshot({
+    path: `screenshots/${user.user}_0.png`,
     // fullPage: true 
   });
 
@@ -147,15 +217,15 @@ const runBrowserForUser = async (user) => {
   })
 
   await page.screenshot({
-    path: `screenshots/${user.userName}_1.png`,
+    path: `screenshots/${user.user}_1.png`,
     // fullPage: true 
   });
 
   console.info('a')
 
-  // await page.goto('https://twitter.com/cap_planalto/with_replies', {
-  await page.goto('https://twitter.com/jomariolson/with_replies', {
-    waitUntil: 'networkidle',
+  // await page.goto(`https://twitter.com/{process.env.MAIN_USER}/with_replies`, {
+  await page.goto(`https://twitter.com/${process.env.JOMARIOLSON_USER}/with_replies`, {
+    waitUntil: 'networkidle2',
     // timeout: 1000000
   });
   console.info('b')
@@ -163,25 +233,51 @@ const runBrowserForUser = async (user) => {
   // await waitFeedLoads(page, selector)
 
   await page.screenshot({
-    path: `screenshots/${user.userName}_2.png`,
+    path: `screenshots/${user.user}_2.png`,
     fullPage: true,
     timeout: 100000
   });
 
   console.info('c')
 
-  // // const innerHtmls = await page.locator(selector.main).innerHTML();
-  // const innerHtmls = await page.locator(selector.main).elementHandles()
-  // const innerHtmls = await page.locator(selector.main).allInnerTexts()
-  const innerHtmls = await page.locator(selector.main).allTextContents()
+  const name = process.env.JOMARIOLSON_NAME.replace(' ', '\\s')
 
-  // innerHtmls.forEach((el) => {
-  //   console.log('el', el)
-  // })
-  console.info('-------')
-  console.info('innerHtmls', innerHtmls)
-  console.info('-------')
-  await page.waitForTimeout(10000);
+  // let tweets = await page.locator(selector.main).allTextContents()
+  // const tweetsElement = await page.$$(selector.main) // locator(selector.main).allTextContents()
+  // let tweets = await page.evaluate(el => el.textContent, tweetsElement)
+  // let tweets = await page.evaluate(el => el.textContent, tweetsElement)
+  const tweetsRaw = await page.evaluate((selector) => {
+    return Array.from(
+      document.querySelectorAll(selector.main),
+      (element) => element.textContent
+    )
+  }, selector)
+
+  // normalize enter and concatenation
+  // and add index
+  const tweets = tweetsRaw.map((t, i) => {
+    return [t.replace(/(\r\n|\n|\r)/gm, ''), i]
+  })
+
+  const replyAndRetweetsPattern = new RegExp(`^${name}.*(\\d.*Replying\\sto\\s@|Retweeted.*)`)
+  const threadsToRetweetPattern = new RegExp(`^${name}.*1Show\\sthis\\sthread$`)
+  const isThread = new RegExp(`^${name}.*Show\\sthis\\sthread$`)
+
+  const replyAndRetweets = tweets.filter(t => {
+    return !replyAndRetweetsPattern.test(t[0])
+  })
+
+  const threadsToRetweet = replyAndRetweets.filter(t => {
+    const tweet = t[0]
+    if (isThread.test(tweet)) {
+      return threadsToRetweetPattern.test(tweet)
+    }
+    return true
+  })
+
+  console.info('threadsToRetweet', threadsToRetweet)
+
+  await page.waitForTimeout(1000);
   await browser.close();
 }
 
