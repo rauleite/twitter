@@ -6,13 +6,16 @@
   "scripts": {
     "start": "node index.mjs",
     "test": "node test.mjs",
+    "server": "node loginServer.mjs",
     "dev": "NODE_ENV=development node index.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ungap/structured-clone": "^1.0.0",
     "dotenv": "^16.0.0",
+    "json": "link:@ungap/structured-clone/json",
     "playwright": "^1.21.1",
     "puppeteer": "^13.7.0",
     "puppeteer-extra": "^3.2.3",

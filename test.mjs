@@ -21,8 +21,8 @@ let tweets = [
 ].map(t => {
   return t.replace(/(\r\n|\n|\r)/gm, ' ')
 })
+console.log('->', !!null)
 
-console.log('year', new Date().getFullYear())
 process.exit()
 console.info('tweets.length', tweets.length)
 
@@ -47,3 +47,7 @@ const threadsToRetweet = replyAndRetweets.filter(t => {
   return true
 })
 console.info('threadsToRetweet', threadsToRetweet)
+
+function isArrayEmpty(arr) {
+  return Array.isArray(arr) && arr.length === 0
+}

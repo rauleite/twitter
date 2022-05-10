@@ -1,339 +1,234 @@
-import 'dotenv/config' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
-// import { chromium, firefox, webkit } from 'playwright'
+import { initPuppeteer, users, createDir } from './utils.mjs'
 
-import fs from 'fs'
-import path, { win32 } from 'path'
-
-import puppeteer from 'puppeteer-extra'
-import UserAgent from 'user-agents'
-import StealthPlugin from 'puppeteer-extra-plugin-stealth'
-
-// add stealth plugin and use defaults (all evasion techniques)
-puppeteer.use(StealthPlugin())
-
-/*
-TODO
-Change to Puppeteer if stealth works
-*/
-
-/*
-  TODO
-  Create the rest of accounts
-  Keep them logged
-  Reacts at post to like
- 
-  Navigate to profile page
-  Exclude pinned twit
-  Exclude data-testid="unlike"
- 
-  - Launch different browser to each account
-  - Set a UserAgent for each account according correct browser
-  - Login each account
-
-  - When have a new twitt
-    - Find the first main @
-    - Test if has data-testid="like"
-      - If Yes
-        - Click like
-          - If isn't a reply OR If isn't sequences twitt (thread) 
-            - Click share
-      - If No
-        - Quit loop
-*/
 const envDev = process.env.NODE_ENV === 'development'
 
-const users = [
-  // {
-  //   name: process.env.MAIN_NAME,
-  //   user: process.env.MAIN_USER,
-  //   password: process.env.MAIN_PASS,
-  //   //browser: chromium,
-  //   //userAgent: userAgents.windowsChrome
-  //   userAgent: new userAgent({ userAgent: /Chrome/ }).toString()
-  // },
-  // {
-  //   name: process.env.SMURF_NAME,
-  //   user: process.env.SMURF_USER,
-  //   password: process.env.SMURF_PASS,
-  //   // browser: firefox,
-  //   // userAgent: userAgents.windowsChrome
-  //   //browser: chromium,
-  //   userAgent: new UserAgent({ userAgent: /Chrome/ }).toString()
-  //   //userAgent: userAgents.windowsEdge
-  // },
-  // {
-  //   name: process.env.BRASA_NAME,
-  //   user: process.env.BRASA_USER,
-  //   password: process.env.BRASA_PASS,
-  //  // browser: chromium,
-  //  userAgent: new UserAgent({ userAgent: /Chrome/ }).toString()
-  //  //userAgent: userAgents.androidChrome
-  // },
-  // {
-  //   name: process.env.RAULEITE_NAME,
-  //   user: process.env.RAULEITE_USER,
-  //   password: process.env.RAULEITE_PASS,
-  //   //browser: chromium,
-  //   userAgent: new UserAgent({ userAgent: /Chrome/ }).toString()
-  //   //userAgent: userAgents.appleChrome
-  // },
-  {
-    name: process.env.JOMARIOLSON_NAME,
-    user: process.env.JOMARIOLSON_USER,
-    password: process.env.JOMARIOLSON_PASS,
-    // browser: chromium,
-    userAgent: new UserAgent({ userAgent: /Chrome/ }).toString()
-    // userAgent: userAgents.iosChrome
-    // browser: webkit,
-    // userAgent: userAgents.appleSafari
-  }
-]
+const rootDir = 'screenshots'
+const baseDir = createDir(rootDir, new Date())
 
-const waitFeedLoads = async (page, selector, options) => {
-  const { useTimeoutOnDev = false } = options || {}
+const runBrowserForUser = async (users, index) => {
+  const user = users[index]
 
-  if (useTimeoutOnDev && envDev) {
-    console.info('using timeout')
-    return page.waitForTimeout(10000);
-  }
+  console.log('users', users)
+  console.log('index', index)
+  console.log('users[index]', users[index])
 
-  console.info('using waiting feed selector')
-  return page.waitForSelector(selector.like, {
-    // strict: true,
-    timeout: 10000
-  })
+  // const { page, browser } = await initPuppeteer(user)
+  const data = await initPuppeteer(user)
 
-  // await page.waitForLoadState('networkidle');
+  console.log('data', data)
+  // console.log('page', page)
+  // console.log('browser', browser)
 
-  // await page.waitForNavigation({
-  //   timeout: 1000000
-  // });
+  process.exit()
+  // user.puppeteerBrowser = await initPuppeteer(user)
+  // let { browser, page } = user.puppeteerBrowser
 
-}
-const createDir = (baseDir, dateBase) => {
-  const dir = path.normalize(
-    `./${baseDir}/${dateBase.getFullYear()}_${dateBase.getMonth()}_${dateBase.getDay()}_${dateBase.getHours()}_${dateBase.getMinutes()}_${dateBase.getSeconds()}`
-  )
-  fs.mkdirSync(dir, { recursive: true })
-  return dir
-}
+  // if (!user.isUserLogged) {
+  //   page = await login(page, user, baseDir)
+  //   user.isUserLogged = true
+  // }
 
-const runBrowserForUser = async (user) => {
-  // with playwright instead puppeteer
-  // const browser = await user.browser.launch({
-  // const context = await browser.newContext();
-  // const page = await context.newPage({
-  // const userAgent = new UserAgent();
-  const browser = await puppeteer.launch({
-    args: [
-      '--no-sandbox',
-      // '--proxy-server=https=151.106.13.222:1080'
-    ],
-    // headless: false
-  });
+  // const selector = {
+  //   like: 'div[data-testid="like"]',
+  //   retweet: 'div[data-testid="retweet"]',
+  //   main: 'article[data-testid="tweet"]',
+  // }
 
-  const page = await browser.newPage({
-    userAgent: user.userAgent
-  });
+  // // await waitFeedLoads(page, selector, {
+  // //   useTimeoutOnDev: true
+  // // })
 
-  evaluateLogConfig(page)
+  // console.info('using timeout')
+  // page.waitForTimeout(10000);
 
-  // await page.goto('https://ipinfo.io', {
+  // console.info('a')
+  // const mainUser = process.env.MAIN_USER
+  // const mainName = process.env.MAIN_NAME
+  // const nameAndUser = `${user.name.replace(' ', '\\s')}@${user.user}`
+  // // const nameAndUser = `${mainName.replace(' ', '\\s')}@${mainUser}`
+
+  // // await page.goto(`https://twitter.com/${process.env.JOMARIOLSON_USER}/with_replies`, {
+  // await page.goto(`https://twitter.com/${mainUser}/with_replies`, {
   //   waitUntil: 'networkidle2',
   // });
-  // await page.goto('https://whatismyipaddress.com/', {
-  //   waitUntil: 'networkidle2',
+  // const repliesDir = createDir(baseDir, new Date())
+
+  // await page.waitForTimeout(2000)
+  // console.info('b')
+
+  // await page.screenshot({
+  //   path: `${repliesDir}/replies_${user.user}.png`,
+  //   fullPage: true,
+  //   timeout: 10000
   // });
-  // await page.goto('https://www.purevpn.com/what-is-my-ip', {
-  //   waitUntil: 'networkidle2',
-  // });
-  await page.goto('https://twitter.com/i/flow/login', {
-    waitUntil: 'networkidle2',
-  });
 
-  const rootDir = 'screenshots'
-  const baseDir = createDir(rootDir, new Date())
+  // console.info('c')
 
-  await page.screenshot({
-    path: `${baseDir}/login_${user.user}.png`,
-  });
+  // await page.waitForSelector(selector.main)
 
-  const input = {
-    user: 'input[type="text"]',
-    password: 'input[type="password"]'
-  }
+  // const tweetsRaw = await page.evaluate(selector => {
+  //   // const main = document.querySelectorAll(selector.main)
+  //   return Array.from(
+  //     // main,
+  //     document.querySelectorAll(selector.main),
+  //     (element) => {
+  //       return element.textContent
+  //     }
+  //   )
+  // }, selector)
 
-  const selector = {
-    like: 'div[data-testid="like"]',
-    retweet: 'div[data-testid="retweet"]',
-    main: 'article[data-testid="tweet"]',
-  }
+  // // normalize enter and concatenation
+  // // and add index
+  // const tweets = tweetsRaw.map((t, i) => {
+  //   return [t.replace(/(\r\n|\n|\r)/gm, ''), i]
+  // })
 
-  const inputUser = await page.waitForSelector(input.user)
-  await inputUser.focus()
-  await page.keyboard.type(user.user)
+  // console.log('mainName', mainName)
+  // console.log('mainUser', mainUser)
+  // console.log('nameAndUser', nameAndUser)
 
-  await page.screenshot({
-    path: `${baseDir}/inputUser_${user.user}.png`,
-  });
+  // console.log('tweets', tweets)
 
-  await page.keyboard.press('Tab');
+  // // const toLike = new RegExp(`^${nameAndUser}.*`)
+  // // const toLike = new RegExp(`^${user.name}.*`)
+  // const toLike = new RegExp(`^${mainName}.*`)
 
-  await page.screenshot({
-    path: `${baseDir}/tab_${user.user}.png`,
-  });
-  await page.keyboard.press('Enter');
+  // // const replyAndRetweetsPattern = new RegExp(`^${user.name}.*(\\d.*Replying\\sto\\s@|Retweeted.*)`)
+  // const replyAndRetweetsPattern = new RegExp(`^${mainName}.*(\\d.*Replying\\sto\\s@|Retweeted.*)`)
 
-  // await page.fill(input.password, user.password);
-  // await page.$eval(input.password, el => el.value = user.password);
-  const inputPassword = await page.waitForSelector(input.password, {
-    timeout: 10000
-  })
+  // // const threadsToRetweetPattern = new RegExp(`^${user.name}.*1Show\\sthis\\sthread$`)
+  // const threadsToRetweetPattern = new RegExp(`^${mainName}.*1Show\\sthis\\sthread$`)
 
-  await page.screenshot({
-    path: `${baseDir}/wait_inputPassword_${user.user}.png`,
-  });
+  // // const isThread = new RegExp(`^${user.name}.*Show\\sthis\\sthread$`)
+  // const isThread = new RegExp(`^${mainName}.*Show\\sthis\\sthread$`)
 
-  await inputPassword.focus()
-  await page.keyboard.type(user.password)
+  // const tweetsToLike = tweets.filter(t => {
+  //   return toLike.test(t[0])
+  // })
 
-  await page.screenshot({
-    path: `${baseDir}/inputPassword_${user.user}.png`,
-  });
+  // // // const mainTweets = await page.$$(selector.main)
+  // // const likes = await page.$$(selector.like)
+  // // console.log('likes.length', likes.length)
+  // // // for (const [, i] of likes) {
+  // // // tweetsToLike.forEach(async ([t, i]) => {
+  // // // likes[i].click()
+  // // for (const l of likes) {
+  // //   await page.evaluate(async (element) => {
+  // //     const text = element.textContent
+  // //     console.log('text', text)
 
-  if (!envDev) {
-    console.info('clicked to login')
-    await page.click('div[data-testid="LoginForm_Login_Button"]');
-  }
+  // //     const toLike = new RegExp(`^${mainName}.*`)
+  // //     if (toLike.test(text)) {
+  // //       console.log('click like', text)
+  // //       await element.click()
+  // //     }
+  // //   }, l)
 
-  await waitFeedLoads(page, selector, {
-    useTimeoutOnDev: true
-  })
+  // // }
 
-  await page.screenshot({
-    path: `${baseDir}/wait_feed_inputPassword_${user.user}.png`,
-  });
+  // const likes = await page.$$(selector.like)
+  // console.log('likes.length', likes.length)
 
-  console.info('a')
+  // for (const [, i] of tweetsToLike) {
+  //   // tweetsToLike.forEach(async ([t, i]) => {
+  //   // likes[i].click()
+  //   console.log('i', i)
+  //   await page.evaluate((element) => {
+  //     element.click()
+  //   }, likes[i])
 
-  // await page.goto(`https://twitter.com/{process.env.MAIN_USER}/with_replies`, {
-  await page.goto(`https://twitter.com/${process.env.JOMARIOLSON_USER}/with_replies`, {
-    waitUntil: 'networkidle2',
-  });
-  const repliesDir = createDir(baseDir, new Date())
 
-  await page.waitForTimeout(1000)
-  console.info('b')
 
-  await page.screenshot({
-    path: `${repliesDir}/replies_${user.user}.png`,
-    fullPage: true,
-    timeout: 10000
-  });
+  //   await page.screenshot({
+  //     path: `${repliesDir}/like${i}_${user.user}.png`,
+  //     fullPage: true
+  //   });
+  //   await page.waitForTimeout(1000)
+  //   await page.keyboard.press('Escape');
+  //   await page.waitForTimeout(1000)
+  // }
 
-  console.info('c')
+  // console.info('tweetsToLike', tweetsToLike)
 
-  const nameAndUser = `${user.name.replace(' ', '\\s')}@${user.user}`
-  console.log('nameAndUser', nameAndUser)
+  // const notReplyAndRetweets = tweets.filter(t => {
+  //   return !replyAndRetweetsPattern.test(t[0])
+  // })
 
-  await page.waitForSelector(selector.main)
+  // const tweetsToRetweet = notReplyAndRetweets.filter(t => {
+  //   const tweet = t[0]
+  //   if (isThread.test(tweet)) {
+  //     return threadsToRetweetPattern.test(tweet)
+  //   }
+  //   return true
+  // })
 
-  const tweetsRaw = await page.evaluate(selector => {
-    // const main = document.querySelectorAll(selector.main)
-    return Array.from(
-      // main,
-      document.querySelectorAll(selector.main),
-      (element) => {
-        return element.textContent
-      }
-    )
-  }, selector)
+  // console.info('tweetsToRetweet', tweetsToRetweet)
 
-  // normalize enter and concatenation
-  // and add index
-  const tweets = tweetsRaw.map((t, i) => {
-    return [t.replace(/(\r\n|\n|\r)/gm, ''), i]
-  })
+  // if (isArrayEmpty(tweetsToLike) && isArrayEmpty(tweetsToRetweet)) {
+  //   // if (isArrayEmpty([]) && isArrayEmpty([])) {
+  //   await appTimeout(30000)
+  //   console.log('-> call again', user.name)
+  //   // self calling (with same user)
+  //   await runBrowserForUser(users, index)
+  //   return
+  // }
 
-  const toLike = new RegExp(`^${nameAndUser}.*`)
-  const replyAndRetweetsPattern = new RegExp(`^${nameAndUser}.*(\\d.*Replying\\sto\\s@|Retweeted.*)`)
-  const threadsToRetweetPattern = new RegExp(`^${nameAndUser}.*1Show\\sthis\\sthread$`)
-  const isThread = new RegExp(`^${nameAndUser}.*Show\\sthis\\sthread$`)
+  // // const retweet = await page.$$(selector.retweet)
+  // for (const [, i] of tweetsToRetweet) {
+  //   console.log('i', i)
+  //   // likes[i].click()
+  //   await page.evaluate((element) => {
+  //     element.click()
+  //   }, mainTweets[i])
 
-  const tweetsToLike = tweets.filter(t => {
-    return toLike.test(t[0])
-  })
+  //   await page.screenshot({
+  //     path: `${repliesDir}/retweet_${i}_${user.user}.png`,
+  //     timeout: 10000,
+  //     fullPage: true
+  //   });
 
-  const likes = await page.$$(selector.like)
-  console.log('likes.length', likes.length)
+  //   await page.waitForTimeout(1000)
+  //   await page.keyboard.press('Escape');
+  //   await page.waitForTimeout(1000)
+  // }
 
-  for (const [, i] of tweetsToLike) {
-    // tweetsToLike.forEach(async ([t, i]) => {
-    // likes[i].click()
-    console.log('i', i)
-    await page.evaluate((element) => {
-      element.click()
-    }, likes[i])
+  // await page.waitForTimeout(2000);
 
-    await page.screenshot({
-      path: `${repliesDir}/like${i}_${user.user}.png`,
-      fullPage: true
-    });
-    await page.waitForTimeout(1000)
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(1000)
-  }
-  console.info('tweetsToLike', tweetsToLike)
+  // // infinite loop
+  // if (users.length - 1 <= index) {
+  //   console.log('ENTROU')
+  //   index = 0
+  // } else {
+  //   index++
+  // }
+  // console.log('users.length', users.length)
+  // console.log('index', index)
 
-  const notReplyAndRetweets = tweets.filter(t => {
-    return !replyAndRetweetsPattern.test(t[0])
-  })
-
-  const tweetsToRetweet = notReplyAndRetweets.filter(t => {
-    const tweet = t[0]
-    if (isThread.test(tweet)) {
-      return threadsToRetweetPattern.test(tweet)
-    }
-    return true
-  })
-
-  const retweet = await page.$$(selector.retweet)
-  for (const [, i] of tweetsToRetweet) {
-    console.log('i', i)
-    // likes[i].click()
-    await page.evaluate((element) => {
-      element.click()
-    }, retweet[i])
-
-    await page.screenshot({
-      path: `${repliesDir}/retweet_${i}_${user.user}.png`,
-      timeout: 10000,
-      fullPage: true
-    });
-
-    await page.waitForTimeout(1000)
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(1000)
-  }
-  console.info('tweetsToRetweet', tweetsToRetweet)
-
-  await page.waitForTimeout(2000);
-  await browser.close();
+  // await runBrowserForUser(users, index)
 }
 
-users.forEach(user => {
-  runBrowserForUser(user)
-});
+(async () => {
+  // while (true) {
+  // users.forEach(async (user, i) => {
+  // console.log(`forEach ${i}`, user.name)
+  await runBrowserForUser(users, 0)
+  // });
+  // }
+})()
 
-function evaluateLogConfig(page) {
-  page.on('console', async (msg) => {
-    const msgArgs = msg.args();
-    for (let i = 0; i < msgArgs.length; ++i) {
-      console.log(await msgArgs[i].jsonValue());
-    }
-  });
+function isUserLogged(user) {
+  return !!user.puppeteerBrowser
 }
 
+function isArrayEmpty(arr) {
+  return Array.isArray(arr) && arr.length === 0
+}
+
+function appTimeout(delayms) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(resolve, delayms);
+  });
+}
 // const userAgents = {
 //   windowsEdge: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4482.0 Safari/537.36 Edg/92.0.874.0',
 //   // windowsEdge: new UserAgent({ deviceCategory: 'desktop', platform: 'Win32' }).toString(),

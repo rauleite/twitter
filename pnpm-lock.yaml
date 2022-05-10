@@ -1,7 +1,9 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@ungap/structured-clone': ^1.0.0
   dotenv: ^16.0.0
+  json: link:@ungap/structured-clone/json
   playwright: ^1.21.1
   puppeteer: ^13.7.0
   puppeteer-extra: ^3.2.3
@@ -9,7 +11,9 @@ specifiers:
   user-agents: ^1.0.1008
 
 dependencies:
+  '@ungap/structured-clone': 1.0.0
   dotenv: 16.0.0
+  json: link:@ungap/structured-clone/json
   playwright: 1.21.1
   puppeteer: 13.7.0
   puppeteer-extra: 3.2.3_puppeteer@13.7.0
@@ -45,6 +49,10 @@ packages:
       '@types/node': 17.0.31
     dev: false
     optional: true
+
+  /@ungap/structured-clone/1.0.0:
+    resolution: {integrity: sha512-AFqA1TqCmf2gp4wn6Y1kA/eOy35RVw6/Yti6VcThUup55TWzuQGq70NI/HPTUcH+53Nd9opIkLxVkXYJ6omVyQ==}
+    dev: false
 
   /agent-base/6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
